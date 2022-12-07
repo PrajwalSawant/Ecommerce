@@ -1,9 +1,20 @@
 import React, { useState } from "react";
 import { Col, Row } from "react-bootstrap";
-import LoginImg from "../asset/images/login-image.jpg";
+import CommonLogin from "../common/commonLogin";
+import LoginLeftImage from "../common/LoginLeftImage";
 import style from "../css/login.module.scss";
-
+import { users } from "../helper";
+import _ from "lodash";
+import { useDispatch } from "react-redux";
+import { setUserUpdate } from "../slice/userSlice";
+import { setAdminCheck, setLocalStorage } from "../common/localStorage";
+import { useNavigate } from "react-router";
+import { setAdminUpdate } from "../slice/adminSlice";
 const Login = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const adminEmail = process.env.REACT_APP_ADMIN_EMAIL;
+  const adminPassword = process.env.REACT_APP_ADMIN_PASSWORD;
   const [userData, setUserData] = useState({
     email: "",
     password: "",
@@ -15,94 +26,51 @@ const Login = () => {
       alert("Please fill all the detail");
       return;
     }
-    console.log("userData", userData);
+    let user = [];
+    users.on("value", (snapShot) => {
+      const allUser = snapShot.val();
+      _.map(allUser, (data) => {
+        user.push(data);
+      });
+    });
+    let verfiedUser = [];
+    user.forEach((data) => {
+      if (data.email == userData.email && data.password == userData.password) {
+        alert("User matched");
+        verfiedUser.push(data);
+      }
+      return null;
+    });
+    console.log("verfiedUser", verfiedUser);
+    if (verfiedUser.length == 0) {
+      alert("User is not Registed");
+    } else {
+      if (adminEmail == userData.email && adminPassword == userData.password) {
+        setAdminCheck(true);
+        dispatch(setAdminUpdate(true));
+        navigate("/addProduct");
+      } else {
+        navigate("/");
+        setAdminCheck(false);
+      }
+      dispatch(setUserUpdate(verfiedUser[0]));
+      setLocalStorage(verfiedUser[0].email, verfiedUser[0].password);
+    }
   };
   return (
     <>
       <Row className={style.loginPage}>
         <Col md={6} sm={6}>
-          <img src={LoginImg} />
+          <LoginLeftImage />
         </Col>
-        <Col md={6} sm={6}>
-          <Col md={8} className="mt-5">
-            <form onSubmit={handleSubmit}>
-              {/* <div className="d-flex flex-row align-items-center justify-content-center justify-content-lg-start">
-              <p className="lead fw-normal mb-0 me-3">Sign in with</p>
-              <button
-                type="button"
-                className="btn btn-primary btn-floating mx-1">
-                <i className="fab fa-facebook-f"></i>
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-primary btn-floating mx-1">
-                <i className="fab fa-twitter"></i>
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-primary btn-floating mx-1">
-                <i className="fab fa-linkedin-in"></i>
-              </button>
-            </div>
-
-            <div className="divider d-flex align-items-center my-4">
-              <p className="text-center fw-bold mx-3 mb-0">Or</p>
-            </div> */}
-
-              <div className="form-outline mb-4">
-                <input
-                  type="email"
-                  id="form3Example3"
-                  className="form-control form-control-lg"
-                  placeholder="Enter a valid email address"
-                  value={userData.email}
-                  onChange={(e) =>
-                    setUserData((prevState) => ({
-                      ...prevState,
-                      email: e.target.value,
-                    }))
-                  }
-                />
-                <label className="form-label" for="form3Example3">
-                  Email address
-                </label>
-              </div>
-
-              <div className="form-outline mb-3">
-                <input
-                  type="password"
-                  id="form3Example4"
-                  className="form-control form-control-lg"
-                  placeholder="Enter password"
-                  value={userData.password}
-                  onChange={(e) =>
-                    setUserData((prevState) => ({
-                      ...prevState,
-                      password: e.target.value,
-                    }))
-                  }
-                />
-                <label className="form-label" for="form3Example4">
-                  Password
-                </label>
-              </div>
-              <div className="text-center text-lg-start mt-4 pt-2">
-                <button
-                  type="submit"
-                  className="btn btn-primary btn-lg"
-                  style={{ paddingLeft: "2.5rem", paddingRight: "2.5rem" }}>
-                  Login
-                </button>
-                <p class="small fw-bold mt-2 pt-1 mb-0">
-                  Don't have an account?{" "}
-                  <a href="#!" class="link-danger">
-                    Register
-                  </a>
-                </p>
-              </div>
-            </form>
+        <Col md={6} sm={6} className={style.loginForm}>
+          <Col md={8}>
+            <CommonLogin
+              handleSubmit={handleSubmit}
+              userData={userData}
+              setUserData={setUserData}
+              page="login"
+            />
           </Col>
         </Col>
       </Row>

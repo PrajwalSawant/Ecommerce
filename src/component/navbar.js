@@ -8,9 +8,9 @@ const Navbar = () => {
       <nav
         className={` ${style.customNavbar}  navbar navbar-expand-lg navbar-dark bg-primary`}>
         <div className="container">
-          <a className="navbar-brand" href="">
+          <Link className="navbar-brand" to="/">
             <img src={NavBarImage} />
-          </a>
+          </Link>
           <button
             className="navbar-toggler"
             type="button"
